@@ -46,11 +46,32 @@ data_dict.pop("TOTAL", 0)
 ### can be any key in the person-level dictionary (salary, director_fees, etc.) 
 feature_1 = "salary"
 feature_2 = "exercised_stock_options"
+# feature_3 = 'total_payments'
 poi  = "poi"
 features_list = [poi, feature_1, feature_2]
 data = featureFormat(data_dict, features_list )
 poi, finance_features = targetFeatureSplit( data )
 
+import numpy as np
+
+data = np.array(finance_features)
+print(data.shape)
+
+filtered_data = np.array([ row for row in data if row[1] > 0.0 ])
+print(filtered_data.shape)
+print(np.min(filtered_data, axis=0))
+print(np.max(filtered_data, axis=0))
+
+min_stock = np.min(filtered_data, axis=0)[1]
+max_stock = np.max(filtered_data, axis=0)[1]
+
+filtered_data = np.array([ row for row in data if row[0] > 0.0 ])
+print(filtered_data.shape)
+print(np.min(filtered_data, axis=0))
+print(np.max(filtered_data, axis=0))
+
+min_salary = np.min(filtered_data, axis=0)[0]
+max_salary = np.max(filtered_data, axis=0)[1]
 
 ### in the "clustering with 3 features" part of the mini-project,
 ### you'll want to change this line to 
@@ -60,10 +81,18 @@ for f1, f2 in finance_features:
     plt.scatter( f1, f2 )
 plt.show()
 
+for feature in finance_features:
+    feature[0] = (feature[0] - min_salary) / (max_salary - min_salary)
+    feature[1] = (feature[1] - min_stock) / (max_stock - min_stock)
+print(finance_features)
+
 ### cluster here; create predictions of the cluster labels
 ### for the data and store them to a list called pred
+from sklearn.cluster import KMeans
 
-
+clf = KMeans(n_clusters=2)
+pred = clf.fit_predict(finance_features)
+print(pred)
 
 
 ### rename the "name" parameter when you change the number of features
