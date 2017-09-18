@@ -23,6 +23,7 @@ class LearningAgent(Agent):
         ## TO DO ##
         ###########
         # Set any additional class parameters as needed
+        self.t = 0
 
 
     def reset(self, destination=None, testing=False):
@@ -39,9 +40,9 @@ class LearningAgent(Agent):
         # Update epsilon using a decay function of your choice
         # Update additional class parameters as needed
         # If 'testing' is True, set epsilon and alpha to 0
-        print(self.epsilon, self.alpha, self.planner.env.t, self.alpha ** self.planner.env.t)
-        raw_input()
-        self.epsilon = self.alpha ** self.planner.env.t
+        self.epsilon = 0.999 ** self.t
+        self.t += 1
+        print(self.epsilon)
         if testing:
             self.epsilon = 0
             self.alpha = 0
@@ -68,7 +69,7 @@ class LearningAgent(Agent):
         # With the hand-engineered features, this learning process gets entirely negated.
         
         # Set 'state' as a tuple of relevant data for the agent        
-        state = (waypoint, inputs)
+        state = (waypoint, inputs['light'], inputs['oncoming'], inputs['right'], inputs['left'])
 
         return state
 
@@ -81,8 +82,7 @@ class LearningAgent(Agent):
         ## TO DO ##
         ###########
         # Calculate the maximum Q-value of all actions for a given state
-
-        maxQ = None
+        maxQ = max(self.Q[state].values())
 
         return maxQ 
 
@@ -96,9 +96,10 @@ class LearningAgent(Agent):
         # When learning, check if the 'state' is not in the Q-table
         # If it is not, create a new dictionary for that state
         #   Then, for each action available, set the initial Q-value to 0.0
-
-        return
-
+        if state not in self.Q:
+            self.Q[state] = {}
+            for action in self.valid_actions:
+                self.Q[state][action] = 0.0
 
     def choose_action(self, state):
         """ The choose_action function is called when the agent is asked to choose
@@ -124,7 +125,7 @@ class LearningAgent(Agent):
             if random < self.epsilon:
                 action = random.choice(self.valid_actions)
             else:
-                maxQ = self.get_maxQ(state)
+                action = max(self.Q[state], key=self.Q[state].get)
             
         return action
 
@@ -139,8 +140,10 @@ class LearningAgent(Agent):
         ###########
         # When learning, implement the value iteration update rule
         #   Use only the learning rate 'alpha' (do not use the discount factor 'gamma')
-
-        return
+        if not self.learning:
+            return
+                
+        self.Q[state][action] += self.alpha * (reward  - self.Q[state][action])
 
 
     def update(self):
@@ -167,7 +170,7 @@ def run():
     #   verbose     - set to True to display additional output from the simulation
     #   num_dummies - discrete number of dummy agents in the environment, default is 100
     #   grid_size   - discrete number of intersections (columns, rows), default is (8, 6)
-    env = Environment(verbose=True)
+    env = Environment(verbose=False)
     
     ##############
     # Create the driving agent
@@ -175,7 +178,7 @@ def run():
     #   learning   - set to True to force the driving agent to use Q-learning
     #    * epsilon - continuous value for the exploration factor, default is 1
     #    * alpha   - continuous value for the learning rate, default is 0.5
-    agent = env.create_agent(LearningAgent, learning=True, alpha=0.3, epsilon=0.5)
+    agent = env.create_agent(LearningAgent, learning=True, alpha=0.5, epsilon=1)
     
     ##############
     # Follow the driving agent
@@ -190,7 +193,7 @@ def run():
     #   display      - set to False to disable the GUI if PyGame is enabled
     #   log_metrics  - set to True to log trial and simulation results to /logs
     #   optimized    - set to True to change the default log file name
-    sim = Simulator(env, update_delay=0.01, log_metrics=True, display=True, optimized=True)
+    sim = Simulator(env, update_delay=0.01, log_metrics=True, display=False, optimized=True)
     
     ##############
     # Run the simulator
