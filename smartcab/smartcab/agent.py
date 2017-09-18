@@ -125,7 +125,9 @@ class LearningAgent(Agent):
             if random < self.epsilon:
                 action = random.choice(self.valid_actions)
             else:
-                action = max(self.Q[state], key=self.Q[state].get)
+                max_value = max(self.Q[state].values())
+                actions = [ a for a, v in self.Q[state].iteritems() if v == max_value ]
+                action = random.choice(actions)
             
         return action
 
