@@ -1,6 +1,6 @@
 ## Udacity
 
-My solution for Udacity assignments and projects (excluding Deep Learning projects).
+My solution for Udacity assignments and projects (excluding Deep Learning projects).  
 Udacity course: [Machine Learning Nanodegree](https://classroom.udacity.com/nanodegrees/nd009/syllabus/core-curriculum)
 
 
